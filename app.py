@@ -1,7 +1,7 @@
 import streamlit as st
 
 # importing the separate KNN model for Find Similar Perfumes
-from similar_perfumes import (
+from knn_sp import (
     load_similar_data,
     build_similar_model,
     find_similar_perfumes
