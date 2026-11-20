@@ -1,5 +1,5 @@
 import streamlit as st
-
+from knn import load_data, build_model, recommend_from_text
 # importing the separate KNN model for Find Similar Perfumes
 from knn_sp import (
     load_similar_data,
@@ -58,6 +58,13 @@ page = st.sidebar.radio(
         "Explore Fragrance Families"
     ]
 )
+
+
+@st.cache_resource
+def get_scent_knn():
+    df = load_data()
+    vectorizer, knn = build_model(df)
+    return df, vectorizer, knn
 
 
 # NEW: completed Find Similar Perfumes page
@@ -122,16 +129,62 @@ if page == "Find Similar Perfumes":
                 )
 
 
-# KNN 
 elif page == "Search by Scent Preferences":
 
     st.header("Search by Scent Preferences")
 
     st.write(
-        "The existing knn.py model will be connected "
-        "to this page."
+        "Enter scent notes such as sweet, floral, or vanilla."
+    )
+    scent_df, scent_vectorizer, scent_knn = get_scent_knn()
+
+    query = st.text_input(
+        "Scent notes:",
+        placeholder="vanilla, jasmine, musk"
     )
 
+    number_of_scent_results = st.slider(
+        "Number of recommendations:",
+        min_value=1,
+        max_value=10,
+        value=4,
+        key="scent_slider"
+    )
+
+    if st.button("Search by Scent") and query.strip():
+
+        try:
+            results = recommend_from_text(
+                scent_df,
+                scent_vectorizer,
+                scent_knn,
+                query,
+                number_of_scent_results
+            )
+
+            st.subheader(f"Perfumes matching: {query}")
+
+            for _, perfume in results.iterrows():
+
+                with st.container(border=True):
+
+                    st.subheader(perfume["Name"])
+
+                    st.write(
+                        f"**Brand:** {perfume['Brand']}"
+                    )
+
+                    st.write(
+                        f"**Similarity:** "
+                        f"{perfume['similarity']:.1%}"
+                    )
+
+                    st.write(
+                        f"**Notes:** {perfume['Notes']}"
+                    )
+
+        except ValueError as e:
+            st.warning(str(e))
 
 # K-Means 
 elif page == "Explore Fragrance Families":
