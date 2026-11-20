@@ -7,6 +7,11 @@ from knn_sp import (
     find_similar_perfumes
 )
 
+# import kmeans
+from kmeans import (
+    load_kmeans_model,
+    get_cluster_keywords
+)
 
 st.set_page_config(
     page_title="Perfume Finder",
@@ -66,6 +71,12 @@ def get_scent_knn():
     vectorizer, knn = build_model(df)
     return df, vectorizer, knn
 
+@st.cache_resource
+def get_model():
+    return load_kmeans_model(
+        path="final_perfume_data.csv",
+        n_clusters=5
+    )
 
 # NEW: completed Find Similar Perfumes page
 if page == "Find Similar Perfumes":
@@ -192,6 +203,95 @@ elif page == "Explore Fragrance Families":
     st.header("Explore Fragrance Families")
 
     st.write(
-        "The K-Means model will be connected "
-        "to this page."
+        "Select a scent group to explore perfumes with similar "
+        "fragrance patterns."
     )
+    
+    df, vectorizer, tfidf_matrix, kmeans = get_model()
+    
+    cluster_keywords = get_cluster_keywords(
+        vectorizer,
+        kmeans,
+        number_of_words=10
+    )
+        
+    fragrance_families = sorted(
+        df["fragrance_family"]
+        .dropna()
+        .unique()
+        .tolist()
+    )
+    
+    for cluster_number, words in cluster_keywords.items():
+        family_name = (
+            df[df["cluster"] == cluster_number]
+            ["fragrance_family"]
+            .iloc[0]
+        )
+
+        print(
+            f"Cluster {cluster_number} "
+            f"({family_name}):"
+        )
+        print(", ".join(words))
+        print()
+    
+    family_options = ["View All Groups"] + fragrance_families
+    
+    selected_family = st.selectbox(
+        "Choose a fragrance family",
+        family_options
+    )
+    
+    if selected_family == "View All Groups":
+        st.subheader("All Fragrance Groups")
+        
+        group_summary = (
+            df.groupby("fragrance_family")
+            .size()
+            .reset_index(name="number_of_perfumes")
+            .sort_values(
+                by="number_of_perfumes",
+                ascending=False
+            )
+        )
+        
+        st.dataframe(
+            group_summary,
+            hide_index=True,
+            width="stretch"
+        )
+        
+        for family in fragrance_families:
+            st.write(f"### {family}")
+            
+            family_perfumes = df[
+                df["fragrance_family"] == family
+            ][
+                ["Name", "Brand", "Notes"]
+            ]
+            
+            st.dataframe(
+                family_perfumes.head(10),
+                hide_index=True,
+                width="stretch"
+            )
+    else:
+        st.subheader(f"{selected_family} Perfumes")
+        
+        selected_perfumes = df[
+            df["fragrance_family"] == selected_family
+        ][
+            ["Name", "Brand", "Notes", "cluster"]
+        ]
+        
+        st.write(
+            f"Number of perfumes: "
+            f"{len(selected_perfumes)}"
+        )
+        
+        st.dataframe(
+            selected_perfumes,
+            hide_index=True,
+            width="stretch"
+        )
