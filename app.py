@@ -19,6 +19,14 @@ st.set_page_config(
     layout="wide"
 )
 
+st.markdown("""
+<style>
+[data-testid="stSidebarNav"] {
+    display: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 # Load the perfume dataset
 @st.cache_data
@@ -283,11 +291,38 @@ elif page == "Explore Fragrance Families":
                 ["Name", "Brand", "Notes"]
             ]
             
-            st.dataframe(
-                family_perfumes.head(10),
-                hide_index=True,
-                width="stretch"
-            )
+           
+            # Show perfume names as clickable links
+            family_table = family_perfumes.head(10)
+
+            # Column headings
+            h1, h2, h3 = st.columns([3, 2, 5])
+            h1.write("**Name**")
+            h2.write("**Brand**")
+            h3.write("**Notes**")
+
+            for index, perfume in family_table.iterrows():
+
+                col1, col2, col3 = st.columns([3, 2, 5])
+
+                with col1:
+                    if st.button(
+                        str(perfume["Name"]),
+                        key=f"family_link_{family}_{index}",
+                        type="tertiary"
+                    ):
+                        st.session_state["selected_family_perfume"] = perfume["Name"]
+                        st.switch_page("pages/perfume_details.py")
+
+                with col2:
+                    st.write(perfume["Brand"])
+
+                with col3:
+                    st.write(perfume["Notes"])
+
+                st.divider()
+
+            
     else:
         st.subheader(f"{selected_family} Perfumes")
         
@@ -302,8 +337,41 @@ elif page == "Explore Fragrance Families":
             f"{len(selected_perfumes)}"
         )
         
-        st.dataframe(
-            selected_perfumes,
-            hide_index=True,
-            width="stretch"
-        )
+        
+        
+
+        for family in fragrance_families:
+            st.write(f"### {family}")
+
+            family_perfumes = df[
+                df["fragrance_family"] == family
+            ][["Name", "Brand", "Notes"]]
+
+            family_table = family_perfumes.head(10)
+
+            
+            # Show perfume names as clickable links
+            for index, perfume in family_table.iterrows():
+
+                name = perfume["Name"]
+                brand = perfume["Brand"]
+                notes = perfume["Notes"]
+
+                col1, col2, col3 = st.columns([3, 2, 5])
+
+                with col1:
+                    if st.button(
+                        name,
+                        key=f"family_link_{family}_{index}",
+                        type="tertiary"
+                    ):
+                        st.session_state["selected_family_perfume"] = name
+                        st.switch_page("pages/perfume_details.py")
+
+                with col2:
+                    st.write(brand)
+
+                with col3:
+                    st.write(notes)
+
+                st.divider()
