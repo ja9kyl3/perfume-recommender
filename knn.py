@@ -51,5 +51,5 @@ def recommend_from_text(df, vectorizer, knn, query, k=4):
     result = df.iloc[indices[0]].copy()
     result['similarity'] = 1 - distances[0]
     return result[
-        ['Name', 'Brand', 'Notes', 'similarity']
+        ['Name', 'Brand', 'Notes', 'similarity', 'Image URL']
     ]

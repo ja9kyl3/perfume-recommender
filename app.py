@@ -124,20 +124,26 @@ if page == "Find Similar Perfumes":
 
             with st.container(border=True):
 
-                st.subheader(perfume["Name"])
+                left, right = st.columns([3, 1])
 
-                st.write(
-                    f"**Brand:** {perfume['Brand']}"
-                )
+                with left:
+                    st.subheader(perfume["Name"])
 
-                st.write(
-                    f"**Similarity:** "
-                    f"{perfume['similarity']:.1%}"
-                )
+                    st.write(
+                        f"**Brand:** {perfume['Brand']}"
+                    )
 
-                st.write(
-                    f"**Notes:** {perfume['Notes']}"
-                )
+                    st.write(
+                        f"**Similarity:** "
+                        f"{perfume['similarity']:.1%}"
+                    )
+
+                    st.write(
+                        f"**Notes:** {perfume['Notes']}"
+                    )
+
+                with right:
+                    st.image(perfume["Image URL"], width=150)
 
 
 elif page == "Search by Scent Preferences":
@@ -179,20 +185,26 @@ elif page == "Search by Scent Preferences":
 
                 with st.container(border=True):
 
-                    st.subheader(perfume["Name"])
+                    left, right = st.columns([3, 1])
 
-                    st.write(
-                        f"**Brand:** {perfume['Brand']}"
-                    )
+                    with left:
+                        st.subheader(perfume["Name"])
 
-                    st.write(
-                        f"**Similarity:** "
-                        f"{perfume['similarity']:.1%}"
-                    )
+                        st.write(
+                            f"**Brand:** {perfume['Brand']}"
+                        )
 
-                    st.write(
-                        f"**Notes:** {perfume['Notes']}"
-                    )
+                        st.write(
+                            f"**Similarity:** "
+                            f"{perfume['similarity']:.1%}"
+                        )
+
+                        st.write(
+                            f"**Notes:** {perfume['Notes']}"
+                        )
+
+                    with right:
+                        st.image(perfume["Image URL"], width=150)
 
         except ValueError as e:
             st.warning(str(e))
